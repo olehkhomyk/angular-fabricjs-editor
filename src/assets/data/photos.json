@@ -1,0 +1,348 @@
+{
+  "Version": "2020.1",
+  "PhotoBackgrounds": [
+    {
+      "Key": "AmericanFlag_V2",
+      "Name": "American Flag - Cloth",
+      "Type": "background",
+      "FileName": "AmericanFlag_V2.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "AmericanFlagBoard",
+      "Name": "American Flag - Board",
+      "Type": "background",
+      "FileName": "AmericanFlagBoard.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "Blue",
+      "Name": "Blue Sky",
+      "Type": "background",
+      "FileName": "Blue.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "BlueBoards",
+      "Name": "Blue Boards",
+      "Type": "background",
+      "FileName": "BlueBoards.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "BlueLagoon",
+      "Name": "Blue Lagoon",
+      "Type": "yearbook",
+      "FileName": "BlueLagoon.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "BrightLights",
+      "Name": "Bright Lights",
+      "Type": "background",
+      "FileName": "BrightLights.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "Chalkboard",
+      "Name": "Chalkboard",
+      "Type": "background",
+      "FileName": "Chalkboard.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "ClifffaceDark",
+      "Name": "Cliff Face Dark",
+      "Type": "yearbook",
+      "FileName": "ClifffaceDark.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "ClifffaceLight",
+      "Name": "Cliff Face Light",
+      "Type": "yearbook",
+      "FileName": "ClifffaceLight.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "PinkMood",
+      "Name": "Pink Mood",
+      "Type": "background",
+      "FileName": "PinkMood.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "OrangeMood",
+      "Name": "Orange Mood",
+      "Type": "background",
+      "FileName": "OrangeMood.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "Purple",
+      "Name": "Purple",
+      "Type": "background",
+      "FileName": "Purple.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "SpringDay",
+      "Name": "Spring Day",
+      "Type": "background",
+      "FileName": "SpringDay.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "Petals",
+      "Name": "Petals",
+      "Type": "background",
+      "FileName": "Petals.jpg",
+      "GreenScreenSafe": false,
+      "Active": true
+    },
+    {
+      "Key": "PurpleOmbre",
+      "Name": "Purple Ombre",
+      "Type": "background",
+      "FileName": "PurpleOmbre.jpg",
+      "GreenScreenSafe": false,
+      "Active": false
+    },
+    {
+      "Key": "Storm",
+      "Name": "Storm",
+      "Type": "yearbook",
+      "FileName": "Storm.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "Watermelon",
+      "Name": "Watermelon",
+      "Type": "background",
+      "FileName": "Watermelon.jpg",
+      "GreenScreenSafe": false,
+      "Active": false
+    },
+    {
+      "Key": "YB_Blue",
+      "Name": "Classic Blue",
+      "Type": "yearbook",
+      "FileName": "YB_Blue.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "YB_Grey",
+      "Name": "Classic Grey",
+      "Type": "yearbook",
+      "FileName": "YB_Grey.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "YB_Tan",
+      "Name": "Classic Tan",
+      "Type": "yearbook",
+      "FileName": "YB_Tan.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "ConcreteBlue",
+      "Name": "Concrete Blue",
+      "Type": "background",
+      "FileName": "ConcreteBlue.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "ConcreteGrey",
+      "Name": "Concrete Grey",
+      "Type": "background",
+      "FileName": "ConcreteGrey.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "ConcreteTan",
+      "Name": "Concrete Tab",
+      "Type": "background",
+      "FileName": "ConcreteTan.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "CottonCandyBlue",
+      "Name": "Cotton Candy Blue",
+      "Type": "background",
+      "FileName": "CottonCandyBlue.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "CottonCandyBlue_V3",
+      "Name": "Cotton Candy Blue V3",
+      "Type": "background",
+      "FileName": "CottonCandyBlue_v3.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "GrayLoops",
+      "Name": "Gray Loops",
+      "Type": "background",
+      "FileName": "GrayLoops.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "GreenLockers",
+      "Name": "Green Lockers",
+      "Type": "background",
+      "FileName": "GreenLockers.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "Hearts",
+      "Name": "Hearts",
+      "Type": "background",
+      "FileName": "Hearts.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "Lagoon",
+      "Name": "Lagoon",
+      "Type": "background",
+      "FileName": "Lagoon.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "Parchment_V2",
+      "Name": "Parchment",
+      "Type": "background",
+      "FileName": "Parchment_V2.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "PinkBoards",
+      "Name": "Pink Boards",
+      "Type": "background",
+      "FileName": "PinkBoards.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "Purple Ombre",
+      "Name": "Purple Ombre",
+      "Type": "background",
+      "FileName": "PurpleOmbre.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "Rose",
+      "Name": "Rose",
+      "Type": "background",
+      "FileName": "Rose.jpg",
+      "GreenScreenSafe": false,
+      "Active": false
+    },
+    {
+      "Key": "Sandlewood",
+      "Name": "Sandlewood",
+      "Type": "background",
+      "FileName": "Sandlewood.jpg",
+      "GreenScreenSafe": false,
+      "Active": false
+    },
+    {
+      "Key": "Tar",
+      "Name": "Tar",
+      "Type": "background",
+      "FileName": "Tar.jpg",
+      "GreenScreenSafe": true,
+      "Active": false
+    },
+    {
+      "Key": "Lake",
+      "Name": "Lake",
+      "Type": "background",
+      "FileName": "Lake.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    },
+    {
+      "Key": "Mocha",
+      "Name": "Mocha",
+      "Type": "background",
+      "FileName": "Mocha.jpg",
+      "GreenScreenSafe": true,
+      "Active": true
+    }
+  ],
+  "PhotoBackgroundCategories": [
+    {
+      "Key": "Spring2019",
+      "Name": "NEW FOR SPRING!",
+      "Active": false,
+      "BackgroundKeys": [
+        "Lake",
+        "Ocean",
+        "Clouds",
+        "Mocha",
+        "TerraCotta",
+        "Lavender",
+        "Fossils",
+        "DashingDots",
+        "RoseMarble",
+        "Forest"
+      ]
+    },
+    {
+      "Key": "Classics",
+      "Name": "",
+      "Active": "true",
+      "BackgroundKeys": [
+        "BlueLagoon",
+        "ClifffaceDark",
+        "ClifffaceLight",
+        "Storm",
+        "Blue",
+        "Purple",
+        "YB_Blue",
+        "YB_Grey",
+        "YB_Tan",
+        "Lake",
+        "Mocha",
+        "Chalkboard",
+        "BlueBoards",
+        "Petals",
+        "BrightLights",
+        "OrangeMood",
+        "PinkMood",
+        "SpringDay",
+        "AmericanFlag_V2",
+        "AmericanFlagBoard"
+
+      ]
+    }
+  ]
+}

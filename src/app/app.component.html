@@ -1,0 +1,460 @@
+<div class="container">
+  <div class="row">
+      <div class="col-xl-12">
+          <div class="row">
+              <div class="col-xl-12 text-right pt-lg-2">
+                  <button data-toggle="tooltip"
+                          data-placement="bottom"
+                          title="Load from localStorage"
+                          type="button"
+                          class="btn btn-primary m-2"
+                          [disabled]="isExportDisabled"
+                          (click)="exportPersonalizationToPDF()">
+                      <i class="fa fa-save" aria-hidden="true"></i> Export Personalization to PDF
+                  </button>
+
+                  <button data-toggle="tooltip"
+                          data-placement="bottom"
+                          title="Load from localStorage"
+                          type="button"
+                          class="btn btn-primary m-2"
+                          [disabled]="isExportDisabled"
+                          (click)="exportPersonalizationToPNG()">
+                      <i class="fa fa-save" aria-hidden="true"></i> Export Personalization to PNG
+                  </button>
+
+                  <button data-toggle="tooltip"
+                          data-placement="bottom"
+                          title="Load from localStorage"
+                          type="button"
+                          class="btn btn-primary  m-2"
+                          [disabled]="isExportDisabled"
+                          (click)="exportPersonalizationToJSON();">
+                      <i class="fa fa-save" aria-hidden="true"></i> Export Personalization to JSON
+                  </button>
+
+                  <div class="position-relative json-uploader-box">
+                      <input class="json-uploader"
+                             type="file"
+                             (change)="loadPersonalizationFromJson($event);">
+
+                      <button data-toggle="tooltip"
+                              data-placement="bottom"
+                              title="Load from localStorage"
+                              type="button"
+                              class="btn btn-primary m-2">
+                          <i class="fa fa-save" aria-hidden="true"></i>
+                          Import Personalization JSON
+                      </button>
+                  </div>
+
+                  <hr/>
+
+                  <button data-toggle="tooltip"
+                          data-placement="bottom"
+                          title="Load from localStorage"
+                          type="button"
+                          class="btn btn-primary m-2"
+                          [disabled]="isExportDisabled"
+                          (click)="exportFullCanvasToPDF()">
+                    <i class="fa fa-save" aria-hidden="true"></i> Export Image to PDF
+                  </button>
+
+                  <button data-toggle="tooltip"
+                          data-placement="bottom"
+                          title="Load from localStorage"
+                          type="button"
+                          class="btn btn-primary m-2"
+                          [disabled]="isExportDisabled"
+                          (click)="exportFullCanvasToPNG()">
+                    <i class="fa fa-save" aria-hidden="true"></i> Export Image to PNG
+                  </button>
+
+                  <button data-toggle="tooltip"
+                          data-placement="bottom"
+                          title="Clean Canvas"
+                          type="button"
+                          class="btn btn-danger m-2"
+                          (click)="confirmClear();">
+                      <i class="fa fa-ban" aria-hidden="true"></i> Clean
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+  <hr>
+  <div class="row">
+      <div class="col-xl-3">
+          <div class="card">
+              <div class="card-header cursor-pointer" (click)="toggleBgList()">Set Background</div>
+              <div class="card-body max-height" [class.hidden-body]="!isBgListDisplayed">
+                  <img class="images-item"
+                       *ngFor="let background of backgroundList"
+                       (click)="setBackgroundImage(background.Key)"
+                       [src]="getBackgroundPath(background.Key)">
+              </div>
+          </div>
+
+          <br/>
+          <div class="card" *ngIf="!canvas.selected">
+              <div class="card-header cursor-pointer" (click)="toggleBgOptions()">Canvas</div>
+              <div class="card-body overflow-hidden" [class.hidden-body]="!isBgOptionsDisplayed">
+                  <div class="custom-item">
+                      <div class="custom-item-title">Background Color</div>
+                      <div class="custom-item-body">
+                          <input type="text"
+                                 class="form-control"
+                                 [cpPosition]="'bottom'"
+                                 [(colorPicker)]="canvas.props.canvasFill"
+                                 [style.background]="canvas.props.canvasFill"
+                                 [value]="canvas.props.canvasFill"
+                                 (colorPickerChange)="setCanvasFill()">
+                      </div>
+                  </div>
+
+                  <div class="custom-item">
+                      <div class="custom-item-title">Upload Background</div>
+                      <div class="card-body text-center">
+                          <img class="images-item-upload"
+                               *ngIf="customImage"
+                               [src]="customImage"
+                               (click)="setCustomBgImage();">
+                          <input type="file" (change)="uploadCustomBgImage($event);">
+                          <br/>
+                          <br/>
+                          <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                              <div class="btn-group" role="group">
+                                  <button type="button" class="btn btn-outline-danger btn-sm"
+                                          (click)="clearCustomBgImage();">
+                                      <i class="fa fa-times" aria-hidden="true"></i> Remove</button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <br/>
+          <div class="card">
+              <div class="card-header">Upload graphics</div>
+              <div class="card-body text-center">
+                  <img id="testImage"
+                       class="images-item-upload"
+                       *ngIf="canvas.url"
+                       [src]="canvas.url"
+                       (click)="addImageOnCanvas(canvas.url);">
+                  <input type="file" (change)="readUrl($event);">
+                  <br/>
+                  <br/>
+                  <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                      <div class="btn-group" role="group">
+                          <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeWhite(canvas.url);">
+                              <i class="fa fa-times" aria-hidden="true"></i> Remove</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <br/>
+          <div class="card">
+              <div class="card-header">Upload main image</div>
+              <div class="card-body text-center">
+                  <input type="file" (change)="setMainImage($event);">
+                  <br/>
+              </div>
+          </div>
+      </div>
+
+      <div class="col-xl-6">
+          <div class="canvas-box position-relative">
+              <angular-editor-fabric-js class="main-canvas position-absolute" #canvas>
+              </angular-editor-fabric-js>
+
+              <div class="personalization-canvas position-absolute" [class.red-border]="isExportDisabled">
+                  <angular-editor-fabric-js
+                    #personalizationCanvas
+                    (objectOutBorder)="handleObjectOutBorder()"
+                    [canvasHeight]="this.presentationCanvasSize.height"
+                    [canvasWidth]="this.presentationCanvasSize.width">
+                  </angular-editor-fabric-js>
+              </div>
+          </div>
+
+          <br/>
+          <div class="card">
+              <div class="card-header">Options</div>
+              <div class="card-body text-center">
+                  <div class="btn-group" role="group" aria-label="...">
+                      <button data-toggle="tooltip"
+                              data-placement="bottom"
+                              title="Delete element"
+                              type="button"
+                              class="btn btn-outline-danger"
+                              [disabled]="!personalizationCanvas.selected"
+                              (click)="removeSelected();">
+                          <i class="fa fa-trash" aria-hidden="true"></i>
+                      </button>
+                      <button data-toggle="tooltip"
+                              data-placement="bottom"
+                              title="Send to back"
+                              type="button"
+                              class="btn btn-outline-primary"
+                              [disabled]="!personalizationCanvas.selected"
+                              (click)="sendToBack();">
+                          <i class="fa fa-level-down" aria-hidden="true"></i>
+                      </button>
+                      <button data-toggle="tooltip"
+                              data-placement="bottom"
+                              title="Send to front"
+                              type="button"
+                              class="btn btn-outline-primary"
+                              [disabled]="!personalizationCanvas.selected"
+                              (click)="bringToFront();">
+                          <i class="fa fa-level-up" aria-hidden="true"></i>
+                      </button>
+                      <button data-toggle="tooltip"
+                              data-placement="bottom"
+                              title="Clone"
+                              type="button"
+                              class="btn btn-outline-primary"
+                              [disabled]="!personalizationCanvas.selected || personalizationCanvas.selected.type == 'group'"
+                              (click)="clone();">
+                          <i class="fa fa-clone" aria-hidden="true"></i>
+                      </button>
+                      <button data-toggle="tooltip"
+                              data-placement="bottom"
+                              title="Unselect"
+                              type="button"
+                              class="btn btn-outline-primary"
+                              [disabled]="!personalizationCanvas.selected"
+                              (click)="cleanSelect()">
+                          <i class="fa fa-remove" aria-hidden="true"></i>
+                      </button>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <div class="col-xl-3">
+          <div class="card">
+              <div class="card-header">Add text</div>
+              <div class="card-body">
+                  <div class="input-group">
+                      <input type="text"
+                             class="form-control text-input"
+                             [(ngModel)]="personalizationCanvas.textString">
+                      <div class="input-group-append">
+                          <span class="input-group-text">
+                              <button id="add-text"
+                                      data-toggle="tooltip"
+                                      data-placement="bottom"
+                                      title="Add text"
+                                      class="btn btn-primary"
+                                      (click)="addText()">
+                                  <i class="fa fa-plus" aria-hidden="true"></i>
+                              </button>
+                          </span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <br/>
+
+          <div class="card">
+              <div class="card-header">Text configuration</div>
+
+              <div class="card-body">
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected  && personalizationCanvas.selected.type == 'group'">Group Selected</div>
+                  <div class="custom-item" *ngIf="!personalizationCanvas.selected">No items selected</div>
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.selected.type != 'group'">
+                      <div class="custom-item-title">ID</div>
+                      <div class="custom-item-body">
+                          <input type="text" class="form-control"
+                                 [(ngModel)]="personalizationCanvas.props.id"
+                                 (keyup)="setId()">
+                      </div>
+                  </div>
+
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.selected.type != 'group'">
+                      <div class="custom-item-title">Opacity</div>
+                      <div class="custom-item-body">
+                          <input type="range"
+                                 [(ngModel)]="personalizationCanvas.props.opacity"
+                                 (change)="setOpacity()">
+                          {{personalizationCanvas.props.opacity}}
+                      </div>
+                  </div>
+
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.textEditor || personalizationCanvas.selected && personalizationCanvas.figureEditor">
+                      <div class="custom-item-title">Color</div>
+                      <div class="custom-item-body">
+                          <input type="text"
+                                 class="form-control"
+                                 [cpPosition]="'bottom'"
+                                 [(colorPicker)]="personalizationCanvas.props.fill"
+                                 [style.background]="personalizationCanvas.props.fill"
+                                 [value]="personalizationCanvas.props.fill"
+                                 (colorPickerChange)="setFill()">
+                      </div>
+                  </div>
+
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.textEditor">
+                      <div class="custom-item-title">Text Background color</div>
+                      <div class="custom-item-body">
+                          <input type="text" class="form-control"
+                                 [cpPosition]="'bottom'"
+                                 [(colorPicker)]="personalizationCanvas.props.textBgColor"
+                                 [style.background]="personalizationCanvas.props.textBgColor"
+                                 [value]="personalizationCanvas.props.fill"
+                                 (colorPickerChange)="setTextBgColor()">
+                      </div>
+                  </div>
+
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.textEditor">
+                      <div class="custom-item-title">Font family</div>
+                      <div class="custom-item-body">
+                          <select class="form-control"
+                                  [(ngModel)]="personalizationCanvas.props.fontFamily"
+                                  (change)="setFontFamily()">
+                              <option value="arial">Arial</option>
+                              <option value="helvetica" selected>Helvetica</option>
+                              <option value="verdana">Verdana</option>
+                              <option value="courier">Courier</option>
+                              <option value="Roboto">Roboto</option>
+                              <option value="Open Sans">Open Sans</option>
+                              <option value="Zilla Slab">Zilla Slab</option>
+                              <option value="Lato">Lato</option>
+                              <option value="Bellefair">Bellefair</option>
+                              <option value="Fresca">Fresca</option>
+                              <option value="Raleway">Raleway</option>
+                              <option value="Open Sans Condensed">Open Sans Condensed</option>
+                              <option value="Indie Flower">Indie Flower</option>
+                              <option value="Josefin Sans">Josefin Sans</option>
+                              <option value="Inconsolata">Inconsolata</option>
+                              <option value="Pacifico">Pacifico</option>
+                              <option value="Gloria Hallelujah">Gloria Hallelujah</option>
+                          </select>
+                      </div>
+                  </div>
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.textEditor">
+                      <div class="custom-item-title">Style</div>
+                      <div class="custom-item-body text-center">
+                          <div class="btn-group" role="group" aria-label="...">
+                              <button type="button"
+                                      class="btn btn-primary btn-sm"
+                                      [ngClass]="{'active': personalizationCanvas.props.fontWeight }"
+                                      (click)="setBold()">
+                                  <i class="fa fa-bold"></i>
+                              </button>
+                              <button type="button"
+                                      class="btn btn-primary btn-sm"
+                                      [ngClass]="{'active': personalizationCanvas.props.fontStyle }"
+                                      (click)="setFontStyle()">
+                                  <i class="fa fa-italic"></i>
+                              </button>
+                              <button type="button"
+                                      class="btn btn-primary btn-sm"
+                                      [ngClass]="{'active': hasTextDecoration('underline') }"
+                                      (click)="setTextDecoration('underline')">
+                                  <i class="fa fa-underline"></i>
+                              </button>
+                              <button type="button"
+                                      class="btn btn-primary btn-sm"
+                                      [ngClass]="{'active': hasTextDecoration('overline') }"
+                                      (click)="setTextDecoration('overline')">
+                                  <i class="fa fa-underline fa-flip-vertical"></i>
+                              </button>
+                              <button type="button"
+                                      class="btn btn-primary btn-sm"
+                                      [ngClass]="{'active': hasTextDecoration('line-through') }"
+                                      (click)="setTextDecoration('line-through')">
+                                  <i class="fa fa-strikethrough"></i>
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.textEditor">
+                      <div class="custom-item-title">Font Size</div>
+                      <div class="custom-item-body">
+                          <input type="range"
+                                 [(ngModel)]="personalizationCanvas.props.fontSize"
+                                 (change)="setFontSize()"
+                                 step="1"
+                                 min="1"
+                                 max="120">{{personalizationCanvas.props.fontSize}}</div>
+                  </div>
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.textEditor">
+                      <div class="custom-item-title">Line Height</div>
+                      <div class="custom-item-body">
+                          <input type="range"
+                                 [(ngModel)]="personalizationCanvas.props.lineHeight"
+                                 (change)="setLineHeight()"
+                                 step="0.1"
+                                 min="0"
+                                 max="10">{{personalizationCanvas.props.lineHeight}}</div>
+                  </div>
+                  <div class="custom-item" *ngIf="personalizationCanvas.selected && personalizationCanvas.textEditor">
+                      <div class="custom-item-title">Char Spacing</div>
+                      <div class="custom-item-body">
+                          <input type="range"
+                                 [(ngModel)]="personalizationCanvas.props.charSpacing"
+                                 (change)="setCharSpacing()"
+                                 step="10"
+                                 min="-200"
+                                 max="800">
+                          {{personalizationCanvas.props.charSpacing}}
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <br/>
+          <div class="card">
+              <div class="card-header cursor-pointer" (click)="toggleFigureList()">Add Shapes</div>
+              <div class="card-body text-center max-height" [class.hidden-body]="!isFigureDisplayed">
+                  <div class="btn-group btn-group-vertical pt-1" role="group" aria-label="...">
+                      <button type="button" class="btn btn-primary" (click)="addFigure('rectangle');">Rectangle</button>
+                      <button type="button" class="btn btn-primary" (click)="addFigure('square');">Square</button>
+                      <button type="button" class="btn btn-primary" (click)="addFigure('triangle');">Triangle</button>
+                      <button type="button" class="btn btn-primary" (click)="addFigure('circle');">Circle</button>
+                  </div>
+              </div>
+          </div>
+
+          <br/>
+          <div class="card">
+              <div class="card-header cursor-pointer" (click)="toggleStickerList()">Add stickers</div>
+              <div class="card-body max-height" [class.hidden-body]="!isStickerListDisplayed">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/pikachu.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/squirtle.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/bullbasaur.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/charmander.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/bellsprout.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/caterpie.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/dratini.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/eevee.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/jigglypuff.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/mankey.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/meowth.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/pidgey.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/psyduck.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/rattata.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/abra.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/snorlax.svg">
+                  <img class="images-item" (click)="getImgPolaroid($event)" src="../assets/img/zubat.svg">
+              </div>
+          </div>
+
+          <br/>
+          <div class="card">
+              <div class="card-header">Add Icons</div>
+              <div class="card-body max-height">
+                  <img class="images-item" (click)="addIconOnCanvas($event)" src="../assets/img/jpeg_icon.jpg">
+                  <img class="images-item" (click)="addIconOnCanvas($event)" src="../assets/img/png_icon.png">
+              </div>
+          </div>
+          <br/>
+      </div>
+  </div>
+</div>
