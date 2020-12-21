@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { isNil } from 'lodash';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FabricjsEditorComponent } from 'projects/angular-editor-fabric-js/src/public-api';
 import photos from '../assets/data/photos.json';
 import { PresentationCanvas } from './helpers/presentation-canvas';
@@ -6,7 +7,9 @@ import { map, switchMap, take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { downloadImage, downloadJSON,
   downloadPDF } from './helpers/file';
-import { imageToPdfConfig } from './helpers/config';
+import { icons, imageToPdfConfig } from './helpers/config';
+import { MatDialog } from '@angular/material/dialog';
+import { CropperModalComponent } from './cropper-modal/cropper-modal.component';
 
 @Component({
   selector: 'app-root',
@@ -16,11 +19,13 @@ import { imageToPdfConfig } from './helpers/config';
 export class AppComponent implements OnInit {
   public backgroundList: Array<{Name: string, FileName: string, Key: string, Active: boolean}>;
   public customImage: any;
+  public mainImage: any = null;
 
   public isBgListDisplayed = false;
   public isBgOptionsDisplayed = false;
   public isStickerListDisplayed = false;
   public isFigureDisplayed = false;
+  public isIconsDisplayed = false;
   public convertWidth = 2400;
   public convertHeight = 3600;
   public size = {
@@ -36,18 +41,22 @@ export class AppComponent implements OnInit {
     return (this.personalizationCanvas && this.personalizationCanvas.isObjectOutOfCanvas) || false;
   }
 
+  public get isCropperDisabled(): boolean {
+    return isNil(this.mainImage);
+  }
+
+  public iconList: Array<any>;
+
   @ViewChild('canvas', {static: false}) canvas: FabricjsEditorComponent;
   @ViewChild('personalizationCanvas', {static: false}) personalizationCanvas: FabricjsEditorComponent;
 
 
-  constructor() {
+  constructor(public dialog: MatDialog) {
     this.backgroundList = photos.PhotoBackgrounds.filter(({Active}) => Active);
+    this.iconList = icons();
   }
 
   ngOnInit() {
-  }
-
-  openModal(): void {
   }
 
   handleObjectOutBorder(): void {
@@ -187,6 +196,13 @@ export class AppComponent implements OnInit {
   }
 
   /**
+   * Expand and collapse Shapes section.
+   */
+  toggleIconList(): void {
+    this.isIconsDisplayed = !this.isIconsDisplayed;
+  }
+
+  /**
    * Expand and collapse Background options section.
    */
   toggleBgOptions(): void {
@@ -208,6 +224,15 @@ export class AppComponent implements OnInit {
    */
   getBackgroundPath(key: string, fullSize: boolean = false): string {
     return `../assets/backgrounds/${key}_${fullSize ? 'medium' : 'thumb'}.jpg`;
+  }
+
+  /**
+   * Get background image path.
+   *
+   * @param name Icon name.
+   */
+  getIconPath(name: string): string {
+    return `../assets/icons/${name}.png`;
   }
 
   /**
@@ -261,6 +286,7 @@ export class AppComponent implements OnInit {
   public confirmClear() {
     this.canvas.confirmClear(() => {
       this.customImage = null;
+      this.mainImage = null;
       this.personalizationCanvas.clear();
       this.personalizationCanvas.renderAll();
     });
@@ -278,6 +304,42 @@ export class AppComponent implements OnInit {
     this.canvas.setBackgroundFile(event, () => {
       event.target.value = '';
     });
+  }
+
+  public openCropperModal(imageData: any): any {
+    return this.dialog.open(CropperModalComponent, {
+      data: {
+        imageData
+      },
+      width: '60vh',
+      height: '90vh'
+    });
+  }
+
+  /**
+   * Set main image with cropper.
+   * @param event Cropper Event.
+   */
+  public setMainImageRX(event): void {
+    this.openCropperModal(event).afterClosed().pipe(
+      switchMap((imageBase64) => this.canvas.setBackgroundImageRx(imageBase64)),
+      tap(() => {
+        if (event.target.files && event.target.files[0]) {
+          this.mainImage = event.target.files[0];
+        }
+        event.target.value = '';
+      }),
+      take(1)
+    ).subscribe();
+  }
+
+  cropMainImage(): void {
+    if (!!this.mainImage) {
+      this.openCropperModal(this.mainImage).afterClosed().pipe(
+        switchMap((data) => this.canvas.setBackgroundImageRx(data)),
+        take(1)
+      ).subscribe();
+    }
   }
 
   public removeWhite(url) {
@@ -332,7 +394,7 @@ export class AppComponent implements OnInit {
   }
 
   public addIconOnCanvas(event) {
-    this.personalizationCanvas.addImageOnCanvas(event.target.src);
+    this.personalizationCanvas.addImageOnCanvas(event.target.src, {width: 100, height: 100});
   }
 
   public addFigure(figure) {

@@ -10,3 +10,17 @@ export const imageToPdfConfig: ImagePDFOptions | any = {
   height: 12,
   fileName: 'download'
 };
+
+export function icons(): Array<any> {
+  const arr = new Array(79);
+
+  for (let i = 0; i < arr.length; i++) {
+    if (i === 56)  {
+      continue;
+    }
+
+    arr[i] = `icon${i + 1}`;
+  }
+
+  return arr;
+}

@@ -96,8 +96,38 @@
           </div>
 
           <br/>
+          <div class="card">
+              <div class="card-header">Upload graphics</div>
+              <div class="card-body text-center">
+                  <img id="testImage"
+                       class="images-item-upload"
+                       *ngIf="canvas.url"
+                       [src]="canvas.url"
+                       (click)="addImageOnCanvas(canvas.url);">
+                  <input type="file" (change)="readUrl($event);">
+                  <br/>
+                  <br/>
+                  <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                      <div class="btn-group" role="group">
+                          <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeWhite(canvas.url);">
+                              <i class="fa fa-times" aria-hidden="true"></i> Remove</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <br/>
+          <div class="card">
+              <div class="card-header">Upload main image</div>
+              <div class="card-body text-center">
+                  <input type="file" (change)="setMainImageRX($event);">
+                  <br/>
+              </div>
+          </div>
+
+          <br/>
           <div class="card" *ngIf="!canvas.selected">
-              <div class="card-header cursor-pointer" (click)="toggleBgOptions()">Canvas</div>
+              <div class="card-header cursor-pointer" (click)="toggleBgOptions()">Advanced</div>
               <div class="card-body overflow-hidden" [class.hidden-body]="!isBgOptionsDisplayed">
                   <div class="custom-item">
                       <div class="custom-item-title">Background Color</div>
@@ -131,40 +161,27 @@
                           </div>
                       </div>
                   </div>
-              </div>
-          </div>
 
-          <br/>
-          <div class="card">
-              <div class="card-header">Upload graphics</div>
-              <div class="card-body text-center">
-                  <img id="testImage"
-                       class="images-item-upload"
-                       *ngIf="canvas.url"
-                       [src]="canvas.url"
-                       (click)="addImageOnCanvas(canvas.url);">
-                  <input type="file" (change)="readUrl($event);">
-                  <br/>
-                  <br/>
-                  <div class="btn-group btn-group-justified" role="group" aria-label="...">
-                      <div class="btn-group" role="group">
-                          <button type="button" class="btn btn-outline-danger btn-sm" (click)="removeWhite(canvas.url);">
-                              <i class="fa fa-times" aria-hidden="true"></i> Remove</button>
+                  <div class="custom-item">
+                      <div class="custom-item-title">Crop main image</div>
+                      <div class="custom-item-body">
+                          <div class="btn-group btn-group-justified" role="group" aria-label="...">
+                              <div class="btn-group" role="group">
+                                <button type="button"
+                                        class="btn btn-primary btn-sm"
+                                        [disabled]="isCropperDisabled"
+                                        (click)="cropMainImage()">
+                                    Crop
+                                </button>
+                              </div>
+                          </div>
                       </div>
                   </div>
               </div>
           </div>
-
-          <br/>
-          <div class="card">
-              <div class="card-header">Upload main image</div>
-              <div class="card-body text-center">
-                  <input type="file" (change)="setMainImage($event);">
-                  <br/>
-              </div>
-          </div>
       </div>
 
+        <!--  !!!!!!!!!!!!!!!   CANVAS !!!!!!!!!!!!!!!!  -->
       <div class="col-xl-6">
           <div class="canvas-box position-relative">
               <angular-editor-fabric-js class="main-canvas position-absolute" #canvas>
@@ -448,10 +465,12 @@
 
           <br/>
           <div class="card">
-              <div class="card-header">Add Icons</div>
-              <div class="card-body max-height">
-                  <img class="images-item" (click)="addIconOnCanvas($event)" src="../assets/img/jpeg_icon.jpg">
-                  <img class="images-item" (click)="addIconOnCanvas($event)" src="../assets/img/png_icon.png">
+              <div class="card-header cursor-pointer" (click)="toggleIconList()">Add Icons</div>
+              <div class="card-body max-height"  [class.hidden-body]="!isIconsDisplayed">
+                  <img class="images-item"
+                       *ngFor="let icon of iconList"
+                       (click)="addIconOnCanvas($event)"
+                       [src]="getIconPath(icon)">
               </div>
           </div>
           <br/>

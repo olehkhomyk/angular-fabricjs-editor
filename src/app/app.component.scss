@@ -1,6 +1,7 @@
 .main-title{
   margin-top: 10px;
 }
+
 .images-item {
   width: 48%;
   cursor: pointer;
@@ -8,11 +9,18 @@
   -webkit-transition: .5s ease;
   padding: 3px;
   max-width: 120px;
+  border: 1px solid lightgray;
 
   &:hover {
     opacity: 0.7;
   }
 }
+
+.images-item-box {
+  padding: 5px;
+  border: 1px solid lightgray;
+}
+
 
 .images-item-upload {
   width: 80%;

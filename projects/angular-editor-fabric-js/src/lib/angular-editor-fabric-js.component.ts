@@ -1,6 +1,7 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
 import { fabric } from 'fabric';
 import { IEvent } from 'fabric/fabric-impl';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'angular-editor-fabric-js',
@@ -197,7 +198,7 @@ export class FabricjsEditorComponent implements AfterViewInit {
   }
 
   // Block "Upload Image"
-  addImageOnCanvas(url) {
+  addImageOnCanvas(url, size: any = { width: 200, height: 200 }) {
     if (url) {
       fabric.Image.fromURL(url, (image) => {
         image.set({
@@ -208,8 +209,8 @@ export class FabricjsEditorComponent implements AfterViewInit {
           cornerSize: 10,
           hasRotatingPoint: true
         });
-        image.scaleToWidth(200);
-        image.scaleToHeight(200);
+        image.scaleToWidth(size.width);
+        image.scaleToHeight(size.height);
         this.extend(image, this.randomId());
         this.canvas.add(image);
         this.selectItemAfterAdded(image);
@@ -250,6 +251,26 @@ export class FabricjsEditorComponent implements AfterViewInit {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  setBackgroundImageRx(data, options: any = {}): Observable<fabric.Image> {
+    return new Observable((observer) => {
+      fabric.Image.fromURL(data,
+        (img) => {
+          // add background image
+          this.canvas.setBackgroundImage(img, () => {
+              this.canvas.renderAll();
+              observer.next(img);
+              observer.complete();
+            },
+            {
+              scaleX: this.size.width / img.width,
+              scaleY: this.size.height / img.height,
+              ...options
+            });
+        }
+      );
+    });
   }
 
   removeWhite(url) {

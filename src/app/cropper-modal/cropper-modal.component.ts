@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { ImageCroppedEvent } from 'ngx-image-cropper';
 
 @Component({
   selector: 'app-cropper-modal',
@@ -7,10 +8,55 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
   styleUrls: ['./cropper-modal.component.scss']
 })
 export class CropperModalComponent implements OnInit {
+  imageChangedEvent: any = null;
+  imageBase64: any = null;
+  imageFile: any = null;
+  croppedImage: any = '';
+  isCropperReady = false;
+  isImageLoaded = false;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
-
-  ngOnInit(): void {
+  public get isSaveAvailable(): boolean {
+    return !!this.croppedImage;
   }
 
+  public get isLoading(): boolean {
+    return  !this.isCropperReady && !this.isImageLoaded;
+  }
+
+  constructor(public dialogRef: MatDialogRef<CropperModalComponent>, @Inject(MAT_DIALOG_DATA) public data: any) { }
+
+  ngOnInit(): void {
+    if (this.data.imageData instanceof Event) {
+      this.imageChangedEvent = this.data.imageData;
+    } else if (this.data.imageData instanceof File) {
+      this.imageFile = this.data.imageData;
+    } else if (this.data.imageData instanceof String) {
+      this.imageBase64 = this.data.imageData;
+    }
+  }
+
+  fileChangeEvent(event: any): void {
+    this.imageChangedEvent = event;
+  }
+
+  imageCropped(event: ImageCroppedEvent) {
+    this.croppedImage = event.base64;
+  }
+
+  imageLoaded(image: any) {
+    this.isImageLoaded = true;
+  }
+
+  cropperReady() {
+    // cropper ready
+    this.isCropperReady = true;
+  }
+
+  loadImageFailed() {
+    // show message
+  }
+
+  cropAndClose(): void {
+    this.dialogRef.close(this.croppedImage);
+  }
 }

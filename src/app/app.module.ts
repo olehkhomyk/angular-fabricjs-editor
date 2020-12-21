@@ -8,6 +8,11 @@ import { ColorPickerModule } from 'ngx-color-picker';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CropperModalComponent } from './cropper-modal/cropper-modal.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ImageCropperModule } from 'ngx-image-cropper';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 @NgModule({
   declarations: [
@@ -20,7 +25,12 @@ import { MatDialogModule } from '@angular/material/dialog';
     FormsModule,
     ColorPickerModule,
     BrowserAnimationsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatButtonModule,
+    ImageCropperModule,
+    MatProgressSpinnerModule,
+    MatFormFieldModule,
+    MatInputModule
   ],
   entryComponents: [
     CropperModalComponent
