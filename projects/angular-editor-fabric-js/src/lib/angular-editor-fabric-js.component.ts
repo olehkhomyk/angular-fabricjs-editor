@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { fabric } from 'fabric';
 import { IEvent } from 'fabric/fabric-impl';
 import { Observable } from 'rxjs';
@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
   templateUrl: './angular-editor-fabric-js.component.html',
   styleUrls: ['./angular-editor-fabric-js.component.css'],
 })
-export class FabricjsEditorComponent implements AfterViewInit {
+export class FabricjsEditorComponent implements AfterViewInit, OnInit {
   @ViewChild('htmlCanvas') htmlCanvas: ElementRef;
 
   @Input()
@@ -55,6 +55,11 @@ export class FabricjsEditorComponent implements AfterViewInit {
 
   constructor() { }
 
+  ngOnInit() {
+    this.size.width = this.canvasWidth || this.size.width;
+    this.size.height = this.canvasHeight || this.size.height;
+  }
+
   ngAfterViewInit(): void {
     // setup front side canvas
     this.canvas = new fabric.Canvas(this.htmlCanvas.nativeElement, {
@@ -76,8 +81,7 @@ export class FabricjsEditorComponent implements AfterViewInit {
 
     this.canvas.on('object:modified', this.handleObjectOutCanvas.bind(this));
 
-    this.canvas.setWidth(this.canvasWidth || this.size.width);
-    this.canvas.setHeight(this.canvasHeight || this.size.height);
+    this.changeSize();
 
     // get references to the html canvas element & its context
     this.canvas.on('mouse:down', (e) => {

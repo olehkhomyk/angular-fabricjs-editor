@@ -1,4 +1,4 @@
-import { ImagePDFOptions } from './file';
+import { getIconPath, ImagePDFOptions } from './file';
 
 export const imageToPdfConfig: ImagePDFOptions | any = {
   orientation: 'p',
@@ -19,7 +19,7 @@ export function icons(): Array<any> {
       continue;
     }
 
-    arr[i] = `icon${i + 1}`;
+    arr[i] = getIconPath(`icon${i + 1}`);
   }
 
   return arr;

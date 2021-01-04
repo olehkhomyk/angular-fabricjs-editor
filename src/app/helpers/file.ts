@@ -1,5 +1,27 @@
 import jsPDF, { ImageOptions } from 'jspdf';
 
+
+/**
+ * Get icon path.
+ *
+ * @param name Icon name.
+ */
+export function getIconPath(name: string): string {
+  return `../assets/icons/${name}.png`;
+}
+
+
+
+/**
+ * Get background image path.
+ *
+ * @param key Image key.
+ * @param fullSize if true than full size of picture.
+ */
+export function getBackgroundPath(key: string, fullSize: boolean = false): string {
+  return `../assets/backgrounds/${key}_${fullSize ? 'medium' : 'thumb'}.jpg`;
+}
+
 /**
  * Download image.
  *
