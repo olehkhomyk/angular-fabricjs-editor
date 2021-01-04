@@ -1,18 +1,40 @@
 import { Size } from '../interface/interfaces';
+import { defaultExportImageWidth, defaultFormatWidth } from './config';
+import { defaultAspectRatio } from './ratio';
 
+// Default main canvas width.
+export const mainCanvasWidth = 540;
 
+// For how much the personalization canvas smaller than main canvas in px (width and height).
+export const defaultPersonalizationOffset = 40;
 
+// For how much reduce the exported personalization offsets.
+export const exportedPersonalizationReduction = defaultPersonalizationOffset / mainCanvasWidth;
 
+// Default personalization canvas size;
+export const defaultPersonalizationSize =
+  getPersonalizationCanvasSize({width: mainCanvasWidth,  height: mainCanvasWidth / defaultAspectRatio});
 
-export const defaultCanvasRatio = 2 / 3;
+/**
+ * Calculate print size depend on ratio.
+ *
+ * @param ratio Aspect Ratio.
+ */
+export function calculatePrintSize(ratio: number): Size {
+  return {
+    width: defaultExportImageWidth,
+    height: defaultExportImageWidth / ratio
+  };
+}
 
-const mainCanvasWidth = 540;
-
-// For how much the presentation canvas smaller than main in px (width and height).
-const defaultPresentationOffset = 40;
-
-export const defaultPersonalizedSize =
-  getPersonalizationCanvasSize({width: mainCanvasWidth,  height: mainCanvasWidth / defaultCanvasRatio});
+/**
+ * Calculate print format depend on ratio.
+ *
+ * @param ratio Aspect Ratio.
+ */
+export function calculateFormat(ratio: number): Array<number> {
+  return [ defaultFormatWidth, defaultFormatWidth / ratio ];
+}
 
 /**
  * Get canvas size by ratio.
@@ -35,8 +57,8 @@ export function getMainCanvasSizeByRatio(ratio: number): Size {
  */
 export function getPersonalizationCanvasSize({width, height}: Size): Size {
   return {
-    width: width - defaultPresentationOffset,
-    height: height - defaultPresentationOffset
+    width: width - defaultPersonalizationOffset,
+    height: height - defaultPersonalizationOffset
   };
 }
 

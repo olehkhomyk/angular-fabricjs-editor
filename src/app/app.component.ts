@@ -1,9 +1,9 @@
-import { isNil } from 'lodash';
+import { isNil, isEmpty } from 'lodash';
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { FabricjsEditorComponent } from 'projects/angular-editor-fabric-js/src/public-api';
 import photos from '../assets/data/photos.json';
-import { PresentationCanvas } from './helpers/presentation-canvas';
-import { map, switchMap, take, tap } from 'rxjs/operators';
+import { PresentationCanvas } from './classes/presentation-canvas';
+import { map, skipWhile, switchMap, take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { downloadImage, downloadJSON,
   downloadPDF } from './helpers/file';
@@ -12,9 +12,15 @@ import { MatDialog } from '@angular/material/dialog';
 import { CropperModalComponent } from './cropper-modal/cropper-modal.component';
 import { getBackgroundPath } from './helpers/file';
 import {
-  defaultPersonalizedSize,
-  getMainCanvasSizeByRatio, getPersonalizationCanvasSize
+  calculatePrintSize,
+  defaultPersonalizationSize,
+  mainCanvasWidth,
+  getMainCanvasSizeByRatio,
+  getPersonalizationCanvasSize,
+  exportedPersonalizationReduction, calculateFormat,
 } from './helpers/size';
+import { defaultAspectRatio } from './helpers/ratio';
+import { BgItem } from './interface/interfaces';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +28,7 @@ import {
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  public backgroundList: Array<{Name: string, FileName: string, Key: string, Active: boolean, path: string}>;
+  public backgroundList: Array<BgItem>;
   public customImage: any;
   public mainImage: any = null;
 
@@ -34,17 +40,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   public isIconsDisplayed = false;
 
   // JUST FOR EXPORTING.
-  public convertWidth = 2400;
-  public convertHeight = 3600;
-
-  // JUST FOR EXPORTING.
   public size = {
     width: 540,
     height: 810
   };
 
   // FOR EXPORTING AND BINDING.
-  public presentationCanvasSize = defaultPersonalizedSize;
+  public presentationCanvasSize = defaultPersonalizationSize;
 
   public get isExportDisabled(): boolean {
     return (this.personalizationCanvas && this.personalizationCanvas.isObjectOutOfCanvas) || false;
@@ -56,26 +58,24 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public iconList: Array<any>;
 
-  public mainCanvasStyles = {
-  };
-
   public personalizationCanvasStyles: any = {};
+
+  private ratio: number = defaultAspectRatio;
 
   @ViewChild('canvas', {static: false}) canvas: FabricjsEditorComponent;
   @ViewChild('personalizationCanvas', {static: false}) personalizationCanvas: FabricjsEditorComponent;
 
-
   constructor(public dialog: MatDialog) {
     this.backgroundList = photos.PhotoBackgrounds
       .filter(({Active}) => Active)
-      .map((item) => ({...item, path: getBackgroundPath(item.Key)}));
+      .map((item) => ({...item, path: getBackgroundPath(item.Key), fullSizePath: getBackgroundPath(item.Key, true)}));
 
     this.iconList = icons();
   }
 
   ngOnInit() {
     // Set default canvases size;
-    // this.updateCanvasesSize(defaultCanvasRatio);
+    // this.updateCanvasesSize(defaultAspectRatio);
     // setTimeout( () => {
     //   this.updateCanvasesSize(4 / 10);
     // }, 3000);
@@ -88,7 +88,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   updatePersonalizationCanvasOffsets(): void {
     const topOffset = (this.canvas.size.height - this.personalizationCanvas.size.height) / 2;
     const leftOffset = (this.canvas.size.width - this.personalizationCanvas.size.width) / 2;
-    const offset = (topOffset + leftOffset) / 2;
 
     const style = {
       top: `${topOffset}px`,
@@ -106,6 +105,8 @@ export class AppComponent implements OnInit, AfterViewInit {
    * @param ratio Ratio.
    */
   private updateCanvasesSize(ratio: number): void {
+    this.ratio = ratio;
+
     const mainCanvasSize = getMainCanvasSizeByRatio(ratio);
     const personalizationCanvasSize = getPersonalizationCanvasSize(mainCanvasSize);
 
@@ -175,7 +176,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   public openCropperModal(imageData: any): any {
     return this.dialog.open(CropperModalComponent, {
       data: {
-        imageData
+        imageData,
+        ratio: this.ratio
       },
       width: '60vh',
       height: '90vh'
@@ -186,11 +188,16 @@ export class AppComponent implements OnInit, AfterViewInit {
    * Prepare full size canvas.
    */
   prepareFullCanvas(): Observable<any> {
+    const { width, height } = calculatePrintSize(this.ratio);
+
     // Initialize presentation Canvas.
-    const canvas = new PresentationCanvas({width: this.convertWidth, height: this.convertHeight});
-    // Calculate multipliers for presentation and image canvas.
-    const multiplier = (this.convertWidth / this.size.width);
-    const personalizationMultiplier = ((multiplier * this.presentationCanvasSize.width) / (this.size.width));
+    const canvas = new PresentationCanvas({width, height});
+
+    // Calculate multipliers for main canvas.
+    const multiplier = (width / mainCanvasWidth);
+
+    // Calculate multipliers for personalization canvas.
+    const personalizationMultiplier = multiplier - (multiplier * (exportedPersonalizationReduction / 8));
 
     // Get both canvas as images.
     const bgPng = this.canvas.toPNG({multiplier});
@@ -198,13 +205,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       multiplier: personalizationMultiplier
     });
 
-    // Set two images on presentation canvas and make it png, for next steps.
+    // Set two images on presentation canvas and convert it to png, for next steps.
     return canvas.setCanvasBackground(bgPng)
     .pipe(
       switchMap(() => canvas.loadImage(personalizationPng)),
       switchMap((image) => canvas.setCanvasImage(image, {
-        left: ((this.convertWidth - image.width) / 2),
-        top: ((this.convertHeight - image.height) / 2),
+        left: (width - image.width) / 2,
+        top: (height - image.height) / 2,
         scaleX: 1,
         scaleY: 1
       })),
@@ -236,6 +243,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       tap((canvasPNG) => {
         downloadPDF({
           ...imageToPdfConfig,
+          format: calculateFormat(this.ratio),
           imageData: canvasPNG,
           fileName: 'personalized_photo',
         });
@@ -247,28 +255,30 @@ export class AppComponent implements OnInit, AfterViewInit {
    * Export personalization to PNG.
    */
   exportPersonalizationToPNG(): void {
+    const { width } = calculatePrintSize(this.ratio);
+    const multiplier = (width / mainCanvasWidth);
+
     this.personalizationCanvas.cleanSelect();
 
-    const imageData = this.personalizationCanvas.toPNG({
-      multiplier: (this.convertWidth / this.canvas.size.width)
-    });
+    const imageData = this.personalizationCanvas.toPNG({multiplier});
 
     downloadImage(imageData, 'personalization');
   }
-
 
   /**
    * Export personalization to PDF.
    */
   exportPersonalizationToPDF(): void {
+    const { width } = calculatePrintSize(this.ratio);
+    const multiplier = (width / mainCanvasWidth);
+
     this.personalizationCanvas.cleanSelect();
 
-    const imageData = this.personalizationCanvas.toPNG({
-      multiplier: (this.convertWidth / this.size.width)
-    });
+    const imageData = this.personalizationCanvas.toPNG({multiplier});
 
     downloadPDF({
       ...imageToPdfConfig,
+      format: calculateFormat(this.ratio),
       imageData,
       fileName: 'personalization',
     });
@@ -355,8 +365,12 @@ export class AppComponent implements OnInit, AfterViewInit {
    */
   public setMainImageRX(event): void {
     this.openCropperModal(event).afterClosed().pipe(
+      skipWhile(data => isEmpty(data)),
       tap(({ratio}) => {
-        this.updateCanvasesSize(ratio);
+        if (this.ratio !== ratio) {
+          this.updateCanvasesSize(ratio);
+          this.personalizationCanvas.clear();
+        }
       }),
       switchMap(({ imageData }) => this.canvas.setBackgroundImageRx(imageData)),
       tap(() => {
@@ -371,13 +385,21 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   cropMainImage(): void {
     if (!!this.mainImage) {
-      this.openCropperModal(this.mainImage).afterClosed().pipe(
-        tap(({ratio}) => {
-          this.updateCanvasesSize(ratio);
-        }),
-        switchMap(({ imageData, ratio }) => this.canvas.setBackgroundImageRx(imageData)),
-        take(1)
-      ).subscribe();
+      const confirmed = confirm('If you change the aspect ratio the personalization will be cleared!');
+
+      if (confirmed) {
+        this.openCropperModal(this.mainImage).afterClosed().pipe(
+          skipWhile(data => isEmpty(data)),
+          tap(({ratio}) => {
+            if (this.ratio !== ratio) {
+              this.updateCanvasesSize(ratio);
+              this.personalizationCanvas.clear();
+            }
+          }),
+          switchMap(({ imageData, ratio }) => this.canvas.setBackgroundImageRx(imageData)),
+          take(1)
+        ).subscribe();
+      }
     }
   }
 

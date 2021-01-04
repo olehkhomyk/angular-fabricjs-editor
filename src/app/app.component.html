@@ -90,7 +90,7 @@
               <div class="card-body max-height" [class.hidden-body]="!isBgListDisplayed">
                   <img class="images-item"
                        *ngFor="let background of backgroundList"
-                       (click)="setBackgroundImage(background.path)"
+                       (click)="setBackgroundImage(background.fullSizePath)"
                        [src]="background.path">
               </div>
           </div>
@@ -163,7 +163,7 @@
                   </div>
 
                   <div class="custom-item">
-                      <div class="custom-item-title">Crop main image</div>
+                      <div class="custom-item-title">Custom crop</div>
                       <div class="custom-item-body">
                           <div class="btn-group btn-group-justified" role="group" aria-label="...">
                               <div class="btn-group" role="group">

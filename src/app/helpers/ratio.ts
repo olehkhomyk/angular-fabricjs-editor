@@ -1,3 +1,5 @@
+export const defaultAspectRatio = 2 / 3;
+
 export function ratios() {
   return [
     {
@@ -15,7 +17,9 @@ export function ratios() {
   ];
 }
 
-export function defaultRatio(): any {
+
+
+export function defaultRatioSelect(): any {
   return {
     text: '2 x 3',
     value: 2 / 3

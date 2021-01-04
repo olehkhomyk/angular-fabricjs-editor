@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
-import { defaultRatio, ratios } from '../helpers/ratio';
+import { defaultAspectRatio, ratios } from '../helpers/ratio';
 
 @Component({
   selector: 'app-cropper-modal',
@@ -16,7 +16,7 @@ export class CropperModalComponent implements OnInit {
   isCropperReady = false;
   isImageLoaded = false;
   ratioList = ratios();
-  selectedRatio = defaultRatio().value;
+  selectedRatio: number;
 
   public get isSaveAvailable(): boolean {
     return !!this.croppedImage;
@@ -35,6 +35,10 @@ export class CropperModalComponent implements OnInit {
       this.imageFile = this.data.imageData;
     } else if (this.data.imageData instanceof String) {
       this.imageBase64 = this.data.imageData;
+    }
+
+    if (this.data.ratio) {
+      this.selectedRatio = this.data.ratio;
     }
   }
 

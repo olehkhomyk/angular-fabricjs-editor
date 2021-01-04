@@ -1,5 +1,6 @@
 import { fabric } from 'fabric';
 import { Observable } from 'rxjs';
+import { Image } from 'fabric/fabric-impl';
 
 /**
  * Canvas to present images, combination of another canvas...
@@ -48,9 +49,9 @@ export class PresentationCanvas {
    *
    * @param data Image Data.
    */
-  loadImage(data: any): Observable<any> {
+  loadImage(data: any): Observable<Image> {
     return new Observable((observer) => {
-      fabric.Image.fromURL(data, (img) => {
+      fabric.Image.fromURL(data, (img: Image) => {
         observer.next(img);
       });
     });
