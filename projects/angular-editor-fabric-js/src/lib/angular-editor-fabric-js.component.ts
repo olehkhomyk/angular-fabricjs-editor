@@ -769,7 +769,6 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
         callback();
       }
     });
-
   }
 
   rasterizeJSON(): any {

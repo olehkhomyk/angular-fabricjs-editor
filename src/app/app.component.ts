@@ -252,16 +252,14 @@ export class AppComponent implements OnInit, AfterViewInit {
    * Export personalization to PNG.
    */
   exportPersonalizationToPNG(): void {
-    /*const { width } = calculatePrintSize(this.ratio);
+    const { width } = calculatePrintSize(this.ratio);
     const multiplier = (width / mainCanvasWidth);
 
     this.personalizationCanvas.cleanSelect();
 
     const imageData = this.personalizationCanvas.toPNG({multiplier});
 
-    downloadImage(imageData, 'personalization');*/
-
-    this.personalizationCanvas.updateObjectPosition();
+    downloadImage(imageData, 'personalization');
   }
 
   /**
@@ -423,7 +421,9 @@ export class AppComponent implements OnInit, AfterViewInit {
       const reader = new FileReader();
       reader.onload = (readerEvent: any) => {
         const data = JSON.parse(readerEvent.target.result);
-        this.personalizationCanvas.loadCanvasFromJSON(data);
+        this.personalizationCanvas.loadCanvasFromJSON(data, () => {
+          this.personalizationCanvas.moveObjectsInsideTheCanvas();
+        });
         event.target.value = '';
       };
       reader.readAsText(event.target.files[0]);
