@@ -107,8 +107,6 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
 
     if (objects.length) {
       objects.forEach((obj) => {
-        // const boundingRect = obj.getBoundingRect(true);
-
         if (obj.left < 0) {
           obj.left = 0;
         }
