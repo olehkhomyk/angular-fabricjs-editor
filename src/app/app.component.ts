@@ -1,44 +1,55 @@
-import { isNil } from 'lodash';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { isNil, isEmpty } from 'lodash';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { FabricjsEditorComponent } from 'projects/angular-editor-fabric-js/src/public-api';
 import photos from '../assets/data/photos.json';
-import { PresentationCanvas } from './helpers/presentation-canvas';
-import { map, switchMap, take, tap } from 'rxjs/operators';
+import { PresentationCanvas } from './classes/presentation-canvas';
+import { map, skipWhile, switchMap, take, tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { downloadImage, downloadJSON,
   downloadPDF } from './helpers/file';
 import { icons, imageToPdfConfig } from './helpers/config';
 import { MatDialog } from '@angular/material/dialog';
 import { CropperModalComponent } from './cropper-modal/cropper-modal.component';
+import { getBackgroundPath } from './helpers/file';
+import {
+  calculatePrintSize,
+  defaultPersonalizationSize,
+  mainCanvasWidth,
+  getMainCanvasSizeByRatio,
+  getPersonalizationCanvasSize,
+  exportedPersonalizationReduction, calculateFormat,
+} from './helpers/size';
+import { defaultAspectRatio } from './helpers/ratio';
+import { BgItem } from './interface/interfaces';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
-  public backgroundList: Array<{Name: string, FileName: string, Key: string, Active: boolean}>;
+export class AppComponent implements OnInit, AfterViewInit {
+  public backgroundList: Array<BgItem>;
   public customImage: any;
   public mainImage: any = null;
 
+  // Sections visibility states.
   public isBgListDisplayed = false;
   public isBgOptionsDisplayed = false;
   public isStickerListDisplayed = false;
   public isFigureDisplayed = false;
   public isIconsDisplayed = false;
-  public convertWidth = 2400;
-  public convertHeight = 3600;
+
+  // JUST FOR EXPORTING.
   public size = {
     width: 540,
     height: 810
   };
-  public presentationCanvasSize = {
-    width: 500,
-    height: 770
-  };
+
+  // FOR EXPORTING AND BINDING.
+  public presentationCanvasSize = defaultPersonalizationSize;
 
   public get isExportDisabled(): boolean {
-    return (this.personalizationCanvas && this.personalizationCanvas.isObjectOutOfCanvas) || false;
+    return (this.personalizationCanvas && this.personalizationCanvas.objectIsOutOfCanvas) || false;
   }
 
   public get isCropperDisabled(): boolean {
@@ -47,138 +58,69 @@ export class AppComponent implements OnInit {
 
   public iconList: Array<any>;
 
+  public personalizationCanvasStyles: any = {};
+
+  private ratio: number = defaultAspectRatio;
+
   @ViewChild('canvas', {static: false}) canvas: FabricjsEditorComponent;
   @ViewChild('personalizationCanvas', {static: false}) personalizationCanvas: FabricjsEditorComponent;
 
-
   constructor(public dialog: MatDialog) {
-    this.backgroundList = photos.PhotoBackgrounds.filter(({Active}) => Active);
+    this.backgroundList = photos.PhotoBackgrounds
+      .filter(({Active}) => Active)
+      .map((item) => ({...item, path: getBackgroundPath(item.Key), fullSizePath: getBackgroundPath(item.Key, true)}));
+
     this.iconList = icons();
   }
 
   ngOnInit() {
+    // Some logic must be here.
+  }
+
+  ngAfterViewInit() {
+    this.updatePersonalizationCanvasOffsets();
+    this.personalizationCanvas.onObjectOutOfBorder.subscribe(this.handleObjectOutBorder);
+  }
+
+  updatePersonalizationCanvasOffsets(): void {
+    const topOffset = (this.canvas.size.height - this.personalizationCanvas.size.height) / 2;
+    const leftOffset = (this.canvas.size.width - this.personalizationCanvas.size.width) / 2;
+
+    const style = {
+      top: `${topOffset}px`,
+      left: `${leftOffset}px`
+    };
+
+    this.personalizationCanvasStyles = {
+      ...style
+    };
+  }
+
+  /**
+   * Update canvases sizes belong to ratio.
+   *
+   * @param ratio Ratio.
+   */
+  private updateCanvasesSize(ratio: number): void {
+    this.ratio = ratio;
+
+    const mainCanvasSize = getMainCanvasSizeByRatio(ratio);
+    const personalizationCanvasSize = getPersonalizationCanvasSize(mainCanvasSize);
+
+    this.canvas.size.width = mainCanvasSize.width;
+    this.canvas.size.height = mainCanvasSize.height;
+
+    this.personalizationCanvas.size.width = personalizationCanvasSize.width;
+    this.personalizationCanvas.size.height = personalizationCanvasSize.height;
+
+    this.canvas.changeSize();
+    this.personalizationCanvas.changeSize();
+
+    this.updatePersonalizationCanvasOffsets();
   }
 
   handleObjectOutBorder(): void {
     alert('Element beyond the editing area, please move the element inside!');
-  }
-
-  /**
-   * Prepare full size canvas.
-   */
-  prepareFullCanvas(): Observable<any> {
-    // Initialize presentation Canvas.
-    const canvas = new PresentationCanvas({width: this.convertWidth, height: this.convertHeight});
-    // Calculate multipliers for presentation and image canvas.
-    const multiplier = (this.convertWidth / this.size.width);
-    const personalizationMultiplier = ((multiplier * this.presentationCanvasSize.width) / (this.size.width));
-
-    // Get both canvas as images.
-    const bgPng = this.canvas.toPNG({multiplier});
-    const personalizationPng = this.personalizationCanvas.toPNG({
-      multiplier: personalizationMultiplier
-    });
-
-    return canvas.setCanvasBackground(bgPng)
-      .pipe(
-        switchMap(() => canvas.loadImage(personalizationPng)),
-        switchMap((image) => canvas.setCanvasImage(image, {
-          left: ((this.convertWidth - image.width) / 2),
-          top: ((this.convertHeight - image.height) / 2),
-          scaleX: 1,
-          scaleY: 1
-        })),
-        map(() => canvas.toPNG()),
-        take(1)
-      );
-  }
-
-  /**
-   * Export full size canvas to PNG.
-   */
-  exportFullCanvasToPNG(): void {
-    this.personalizationCanvas.cleanSelect();
-
-    this.prepareFullCanvas()
-    .pipe(
-      tap((canvasPNG) => {
-        downloadImage(canvasPNG, 'personalized_photo');
-      })
-    ).subscribe();
-  }
-
-  /**
-   * Export full size canvas to PDF.
-   */
-  exportFullCanvasToPDF(): void {
-    this.prepareFullCanvas()
-    .pipe(
-      tap((canvasPNG) => {
-        downloadPDF({
-          ...imageToPdfConfig,
-          imageData: canvasPNG,
-          fileName: 'personalized_photo',
-        });
-      })
-    ).subscribe();
-  }
-
-  /**
-   * Export personalization to PNG.
-   */
-  exportPersonalizationToPNG(): void {
-    this.personalizationCanvas.cleanSelect();
-
-    const imageData = this.personalizationCanvas.toPNG({
-      multiplier: (this.convertWidth / this.canvas.size.width)
-    });
-
-    downloadImage(imageData, 'personalization');
-  }
-
-
-  /**
-   * Export personalization to PDF.
-   */
-  exportPersonalizationToPDF(): void {
-    this.personalizationCanvas.cleanSelect();
-
-    const imageData = this.personalizationCanvas.toPNG({
-      multiplier: (this.convertWidth / this.size.width)
-    });
-
-    downloadPDF({
-      ...imageToPdfConfig,
-      imageData,
-      fileName: 'personalization',
-    });
-  }
-
-  /**
-   * Export personalization to JSON.
-   */
-  exportPersonalizationToJSON(): void {
-    const data = this.personalizationCanvas.toJSON();
-    window.localStorage.setItem('canvas', data);
-
-    downloadJSON(data, 'personalization');
-  }
-
-  /**
-   * Upload and apply JSON personalization to canvas.
-   *
-   * @param event Input File Event.
-   */
-  loadPersonalizationFromJson(event: any): void {
-    if (event.target.files && event.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (readerEvent: any) => {
-        const data = JSON.parse(readerEvent.target.result);
-        this.personalizationCanvas.loadCanvasFromJSON(data);
-        event.target.value = '';
-      };
-      reader.readAsText(event.target.files[0]);
-    }
   }
 
   /**
@@ -217,32 +159,151 @@ export class AppComponent implements OnInit {
   }
 
   /**
-   * Get background image path.
-   *
-   * @param key Image key.
-   * @param fullSize if true than full size of picture.
+   * Clear all canvases.
    */
-  getBackgroundPath(key: string, fullSize: boolean = false): string {
-    return `../assets/backgrounds/${key}_${fullSize ? 'medium' : 'thumb'}.jpg`;
+  public confirmClear() {
+    this.canvas.confirmClear(() => {
+      this.customImage = null;
+      this.mainImage = null;
+      this.personalizationCanvas.clear();
+      this.personalizationCanvas.renderAll();
+    });
+  }
+
+  public openCropperModal(imageData: any): any {
+    return this.dialog.open(CropperModalComponent, {
+      data: {
+        imageData,
+        ratio: this.ratio
+      },
+      width: '60vh',
+      height: '90vh'
+    });
   }
 
   /**
-   * Get background image path.
-   *
-   * @param name Icon name.
+   * Prepare full size canvas.
    */
-  getIconPath(name: string): string {
-    return `../assets/icons/${name}.png`;
+  prepareFullCanvas(): Observable<any> {
+    const { width, height } = calculatePrintSize(this.ratio);
+
+    // Initialize presentation Canvas.
+    const canvas = new PresentationCanvas({width, height});
+
+    // Calculate multiplier for main canvas.
+    const multiplier = (width / mainCanvasWidth);
+
+    // Calculate multipliers for personalization canvas.
+    const personalizationMultiplier = multiplier - (multiplier * (exportedPersonalizationReduction / 8));
+
+    // Get both canvas as images.
+    const bgPng = this.canvas.toPNG({multiplier});
+    const personalizationPng = this.personalizationCanvas.toPNG({
+      multiplier: personalizationMultiplier
+    });
+
+    // Set two images on presentation canvas and convert it to png, for next steps.
+    return canvas.setCanvasBackground(bgPng)
+    .pipe(
+      switchMap(() => canvas.loadImage(personalizationPng)),
+      switchMap((image) => canvas.setCanvasImage(image, {
+        left: (width - image.width) / 2,
+        top: (height - image.height) / 2,
+        scaleX: 1,
+        scaleY: 1
+      })),
+      map(() => canvas.toPNG()),
+      take(1)
+    );
   }
+
+  /**
+   * Export full size canvas to PNG.
+   */
+  exportFullCanvasToPNG(): void {
+    this.personalizationCanvas.cleanSelect();
+
+    this.prepareFullCanvas()
+    .pipe(
+      tap((canvasPNG) => {
+        downloadImage(canvasPNG, 'personalized_photo');
+      })
+    ).subscribe();
+  }
+
+  /**
+   * Export full size canvas to PDF.
+   */
+  exportFullCanvasToPDF(): void {
+    this.prepareFullCanvas()
+    .pipe(
+      tap((canvasPNG) => {
+        downloadPDF({
+          ...imageToPdfConfig,
+          format: calculateFormat(this.ratio),
+          imageData: canvasPNG,
+          fileName: 'personalized_photo',
+        });
+      })
+    ).subscribe();
+  }
+
+  /**
+   * Export personalization to PNG.
+   */
+  exportPersonalizationToPNG(): void {
+    /*const { width } = calculatePrintSize(this.ratio);
+    const multiplier = (width / mainCanvasWidth);
+
+    this.personalizationCanvas.cleanSelect();
+
+    const imageData = this.personalizationCanvas.toPNG({multiplier});
+
+    downloadImage(imageData, 'personalization');*/
+
+    this.personalizationCanvas.updateObjectPosition();
+  }
+
+  /**
+   * Export personalization to PDF.
+   */
+  exportPersonalizationToPDF(): void {
+    const { width } = calculatePrintSize(this.ratio);
+    const multiplier = (width / mainCanvasWidth);
+
+    this.personalizationCanvas.cleanSelect();
+
+    const imageData = this.personalizationCanvas.toPNG({multiplier});
+
+    downloadPDF({
+      ...imageToPdfConfig,
+      format: calculateFormat(this.ratio),
+      imageData,
+      fileName: 'personalization',
+    });
+  }
+
+  /**
+   * Export personalization to JSON.
+   */
+  exportPersonalizationToJSON(): void {
+    const data = this.personalizationCanvas.toJSON();
+    window.localStorage.setItem('canvas', data);
+
+    downloadJSON(data, 'personalization');
+  }
+
+  // ------- Canvases configuration -------.
+
+  // Main Canvas.
 
   /**
    * Set background image to canvas.
    *
-   * @param key background image key.
+   * @param path background image path.
    */
-  setBackgroundImage(key: string): void {
-    const image = this.getBackgroundPath(key, true);
-    this.canvas.setCanvasImage(image);
+  setBackgroundImage(path: string): void {
+    this.canvas.setCanvasImage(path);
   }
 
   /**
@@ -260,36 +321,12 @@ export class AppComponent implements OnInit {
     this.canvas.setCanvasImage();
   }
 
-  /**
-   * Upload custom background image.
-   *
-   * @param event input file event.
-   */
-  uploadCustomBgImage(event): void {
-    if (event.target.files && event.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (readerEvent) => {
-        this.customImage = readerEvent.target.result;
-      };
-      reader.readAsDataURL(event.target.files[0]);
-    }
-  }
-
   public rasterize() {
     this.canvas.rasterize();
   }
 
   public rasterizeSVG() {
     this.canvas.rasterizeSVG();
-  }
-
-  public confirmClear() {
-    this.canvas.confirmClear(() => {
-      this.customImage = null;
-      this.mainImage = null;
-      this.personalizationCanvas.clear();
-      this.personalizationCanvas.renderAll();
-    });
   }
 
   public changeSize() {
@@ -306,14 +343,19 @@ export class AppComponent implements OnInit {
     });
   }
 
-  public openCropperModal(imageData: any): any {
-    return this.dialog.open(CropperModalComponent, {
-      data: {
-        imageData
-      },
-      width: '60vh',
-      height: '90vh'
-    });
+  /**
+   * Upload custom background image.
+   *
+   * @param event input file event.
+   */
+  uploadCustomBgImage(event): void {
+    if (event.target.files && event.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (readerEvent) => {
+        this.customImage = readerEvent.target.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
   }
 
   /**
@@ -322,7 +364,14 @@ export class AppComponent implements OnInit {
    */
   public setMainImageRX(event): void {
     this.openCropperModal(event).afterClosed().pipe(
-      switchMap((imageBase64) => this.canvas.setBackgroundImageRx(imageBase64)),
+      skipWhile(data => isEmpty(data)),
+      tap(({ratio}) => {
+        if (this.ratio !== ratio) {
+          this.updateCanvasesSize(ratio);
+          this.personalizationCanvas.moveObjectsInsideTheCanvas();
+        }
+      }),
+      switchMap(({ imageData }) => this.canvas.setBackgroundImageRx(imageData)),
       tap(() => {
         if (event.target.files && event.target.files[0]) {
           this.mainImage = event.target.files[0];
@@ -336,7 +385,14 @@ export class AppComponent implements OnInit {
   cropMainImage(): void {
     if (!!this.mainImage) {
       this.openCropperModal(this.mainImage).afterClosed().pipe(
-        switchMap((data) => this.canvas.setBackgroundImageRx(data)),
+        skipWhile(data => isEmpty(data)),
+        tap(({ratio}) => {
+          if (this.ratio !== ratio) {
+            this.updateCanvasesSize(ratio);
+            this.personalizationCanvas.moveObjectsInsideTheCanvas();
+          }
+        }),
+        switchMap(({ imageData, ratio }) => this.canvas.setBackgroundImageRx(imageData)),
         take(1)
       ).subscribe();
     }
@@ -356,6 +412,23 @@ export class AppComponent implements OnInit {
   }
 
   // Personalization Canvas.
+
+  /**
+   * Upload and apply JSON personalization to canvas.
+   *
+   * @param event Input File Event.
+   */
+  loadPersonalizationFromJson(event: any): void {
+    if (event.target.files && event.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (readerEvent: any) => {
+        const data = JSON.parse(readerEvent.target.result);
+        this.personalizationCanvas.loadCanvasFromJSON(data);
+        event.target.value = '';
+      };
+      reader.readAsText(event.target.files[0]);
+    }
+  }
 
   public cleanSelect() {
     this.personalizationCanvas.cleanSelect();

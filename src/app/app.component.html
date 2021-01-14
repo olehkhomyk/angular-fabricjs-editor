@@ -90,8 +90,8 @@
               <div class="card-body max-height" [class.hidden-body]="!isBgListDisplayed">
                   <img class="images-item"
                        *ngFor="let background of backgroundList"
-                       (click)="setBackgroundImage(background.Key)"
-                       [src]="getBackgroundPath(background.Key)">
+                       (click)="setBackgroundImage(background.fullSizePath)"
+                       [src]="background.path">
               </div>
           </div>
 
@@ -163,7 +163,7 @@
                   </div>
 
                   <div class="custom-item">
-                      <div class="custom-item-title">Crop main image</div>
+                      <div class="custom-item-title">Custom crop</div>
                       <div class="custom-item-body">
                           <div class="btn-group btn-group-justified" role="group" aria-label="...">
                               <div class="btn-group" role="group">
@@ -181,16 +181,18 @@
           </div>
       </div>
 
-        <!--  !!!!!!!!!!!!!!!   CANVAS !!!!!!!!!!!!!!!!  -->
+     <!--  !!!!!!!!!!!!!!!   CANVAS   !!!!!!!!!!!!!!!!  -->
+
       <div class="col-xl-6">
           <div class="canvas-box position-relative">
               <angular-editor-fabric-js class="main-canvas position-absolute" #canvas>
               </angular-editor-fabric-js>
 
-              <div class="personalization-canvas position-absolute" [class.red-border]="isExportDisabled">
+              <div class="personalization-canvas position-absolute"
+                   [ngStyle]="personalizationCanvasStyles"
+                   [class.red-border]="isExportDisabled">
                   <angular-editor-fabric-js
                     #personalizationCanvas
-                    (objectOutBorder)="handleObjectOutBorder()"
                     [canvasHeight]="this.presentationCanvasSize.height"
                     [canvasWidth]="this.presentationCanvasSize.width">
                   </angular-editor-fabric-js>
@@ -470,7 +472,7 @@
                   <img class="images-item"
                        *ngFor="let icon of iconList"
                        (click)="addIconOnCanvas($event)"
-                       [src]="getIconPath(icon)">
+                       [src]="icon">
               </div>
           </div>
           <br/>

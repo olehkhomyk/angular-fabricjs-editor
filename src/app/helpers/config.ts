@@ -1,11 +1,21 @@
-import { ImagePDFOptions } from './file';
+import { getIconPath, ImagePDFOptions } from './file';
+
+// Default export formats.
+export const defaultFormatWidth = 8;
+export const defaultFormatHeight = 12;
+
+export const defaultExportFormat = [defaultFormatWidth, defaultFormatHeight];
+
+// Default export image width.
+export const defaultExportImageWidth = 2400;
+
 
 export const imageToPdfConfig: ImagePDFOptions | any = {
   orientation: 'p',
   unit: 'in',
   x: 0,
   y: 0,
-  format: [8, 12],
+  format: defaultExportFormat,
   width: 8,
   height: 12,
   fileName: 'download'
@@ -19,7 +29,7 @@ export function icons(): Array<any> {
       continue;
     }
 
-    arr[i] = `icon${i + 1}`;
+    arr[i] = getIconPath(`icon${i + 1}`);
   }
 
   return arr;

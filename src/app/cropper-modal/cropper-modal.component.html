@@ -1,4 +1,13 @@
-<h1 mat-dialog-title>Cropper</h1>
+<div mat-dialog-title>
+    <mat-form-field>
+        <mat-label>Ratio</mat-label>
+        <mat-select [(value)]="selectedRatio">
+            <mat-option *ngFor="let ratio of ratioList" [value]="ratio.value">
+                {{ratio.text}}
+            </mat-option>
+        </mat-select>
+    </mat-form-field>
+</div>
 
 <mat-dialog-content>
     <image-cropper
@@ -6,7 +15,7 @@
             [imageBase64]="imageBase64"
             [imageFile]="imageFile"
             [maintainAspectRatio]="true"
-            [aspectRatio]="2 / 3"
+            [aspectRatio]="selectedRatio"
             format="png"
             (imageCropped)="imageCropped($event)"
             (imageLoaded)="imageLoaded($event)"
