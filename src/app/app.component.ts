@@ -49,7 +49,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public presentationCanvasSize = defaultPersonalizationSize;
 
   public get isExportDisabled(): boolean {
-    return (this.personalizationCanvas && this.personalizationCanvas.isObjectOutOfCanvas) || false;
+    return (this.personalizationCanvas && this.personalizationCanvas.objectIsOutOfCanvas) || false;
   }
 
   public get isCropperDisabled(): boolean {
@@ -74,15 +74,12 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    // Set default canvases size;
-    // this.updateCanvasesSize(defaultAspectRatio);
-    // setTimeout( () => {
-    //   this.updateCanvasesSize(4 / 10);
-    // }, 3000);
+    // Some logic must be here.
   }
 
   ngAfterViewInit() {
     this.updatePersonalizationCanvasOffsets();
+    this.personalizationCanvas.onObjectOutOfBorder.subscribe(this.handleObjectOutBorder);
   }
 
   updatePersonalizationCanvasOffsets(): void {
@@ -193,7 +190,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     // Initialize presentation Canvas.
     const canvas = new PresentationCanvas({width, height});
 
-    // Calculate multipliers for main canvas.
+    // Calculate multiplier for main canvas.
     const multiplier = (width / mainCanvasWidth);
 
     // Calculate multipliers for personalization canvas.
@@ -255,14 +252,16 @@ export class AppComponent implements OnInit, AfterViewInit {
    * Export personalization to PNG.
    */
   exportPersonalizationToPNG(): void {
-    const { width } = calculatePrintSize(this.ratio);
+    /*const { width } = calculatePrintSize(this.ratio);
     const multiplier = (width / mainCanvasWidth);
 
     this.personalizationCanvas.cleanSelect();
 
     const imageData = this.personalizationCanvas.toPNG({multiplier});
 
-    downloadImage(imageData, 'personalization');
+    downloadImage(imageData, 'personalization');*/
+
+    this.personalizationCanvas.updateObjectPosition();
   }
 
   /**
@@ -369,7 +368,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       tap(({ratio}) => {
         if (this.ratio !== ratio) {
           this.updateCanvasesSize(ratio);
-          this.personalizationCanvas.clear();
+          this.personalizationCanvas.moveObjectsInsideTheCanvas();
         }
       }),
       switchMap(({ imageData }) => this.canvas.setBackgroundImageRx(imageData)),
@@ -385,21 +384,17 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   cropMainImage(): void {
     if (!!this.mainImage) {
-      const confirmed = confirm('If you change the aspect ratio the personalization will be cleared!');
-
-      if (confirmed) {
-        this.openCropperModal(this.mainImage).afterClosed().pipe(
-          skipWhile(data => isEmpty(data)),
-          tap(({ratio}) => {
-            if (this.ratio !== ratio) {
-              this.updateCanvasesSize(ratio);
-              this.personalizationCanvas.clear();
-            }
-          }),
-          switchMap(({ imageData, ratio }) => this.canvas.setBackgroundImageRx(imageData)),
-          take(1)
-        ).subscribe();
-      }
+      this.openCropperModal(this.mainImage).afterClosed().pipe(
+        skipWhile(data => isEmpty(data)),
+        tap(({ratio}) => {
+          if (this.ratio !== ratio) {
+            this.updateCanvasesSize(ratio);
+            this.personalizationCanvas.moveObjectsInsideTheCanvas();
+          }
+        }),
+        switchMap(({ imageData, ratio }) => this.canvas.setBackgroundImageRx(imageData)),
+        take(1)
+      ).subscribe();
     }
   }
 

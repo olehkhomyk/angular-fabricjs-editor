@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { fabric } from 'fabric';
 import { IEvent } from 'fabric/fabric-impl';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 @Component({
   selector: 'angular-editor-fabric-js',
@@ -17,10 +17,6 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
   @Input()
   canvasHeight: number;
 
-  @Output()
-  objectOutBorder = new EventEmitter();
-
-  private canvas: fabric.Canvas;
   public props = {
     canvasFill: '#ffffff',
     canvasImage: '',
@@ -38,7 +34,8 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
     TextDecoration: ''
   };
 
-  public isObjectOutOfCanvas = false;
+  public objectIsOutOfCanvas = false;
+
   public textString: string;
   public url: string | ArrayBuffer = '';
   public size: any = {
@@ -47,11 +44,18 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
   };
 
   public json: any;
-  private globalEditor = false;
   public textEditor = false;
-  private imageEditor = false;
   public figureEditor = false;
   public selected: any;
+
+  public get onObjectOutOfBorder(): Observable<any> {
+    return this.objectOutBorder.asObservable();
+  }
+
+  private canvas: fabric.Canvas;
+  private objectOutBorder = new Subject();
+  private globalEditor = false;
+  private imageEditor = false;
 
   constructor() { }
 
@@ -70,6 +74,9 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
 
     this.canvas.on('object:moving', (e) => {});
     this.canvas.on('object:modified', (e) => {});
+    this.canvas.on('after:render', (e) => {
+      // Actions after each render.
+    });
     // this.canvas.on('object:moving', this.handleMoving);
 
     this.canvas.on('selection:updated', this.updateSelection.bind(this));
@@ -79,7 +86,10 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
       this.resetPanels();
     });
 
-    this.canvas.on('object:modified', this.handleObjectOutCanvas.bind(this));
+    this.canvas.on('object:modified', (e) => {
+      const obj = e.target;
+      this.handleObjectIsOutOfCanvas(obj);
+    });
 
     this.changeSize();
 
@@ -87,6 +97,88 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
     this.canvas.on('mouse:down', (e) => {
       const canvasElement: any = document.getElementById('canvas');
     });
+  }
+
+  /**
+   * Move all objects witch are out of canvas area inside the canvas.
+   */
+  moveObjectsInsideTheCanvas(): void {
+    const objects = this.getObjectsOutOfCanvas();
+
+    if (objects.length) {
+      objects.forEach((obj) => {
+        // const boundingRect = obj.getBoundingRect(true);
+
+        if (obj.left < 0) {
+          obj.left = 0;
+        }
+
+        if (obj.top < 0) {
+          obj.top = 0;
+        }
+
+        if ((obj.left + obj.width) > this.canvas.getWidth()) {
+          const extraIndentation = (obj.left + obj.width) - this.canvas.getWidth();
+          obj.left = (obj.left - extraIndentation);
+        }
+
+        if ((obj.top + obj.height) > this.canvas.getHeight()) {
+          const extraIndentation = (obj.top + obj.height) - this.canvas.getHeight();
+          obj.top = (obj.top - extraIndentation);
+        }
+
+        obj.setCoords();
+      });
+
+      this.renderAll();
+    }
+  }
+
+  /**
+   * Get objects out of canvas.
+   */
+  getObjectsOutOfCanvas(): Array<any> {
+    const objects = this.canvas.getObjects();
+    let outObjects = [];
+
+    if (objects.length) {
+      outObjects = objects.filter(this.isObjectOutOfCanvas.bind(this));
+    }
+
+    return outObjects;
+  }
+
+  /**
+   * Emit action when object is out of canvas.
+   *
+   * @param obj canvas Object. (Text, Figure, image, etc...)
+   */
+  handleObjectIsOutOfCanvas(obj): void {
+    if (this.isObjectOutOfCanvas(obj)) {
+      this.objectOutBorder.next(obj);
+      this.objectIsOutOfCanvas = true;
+    } else {
+      this.objectIsOutOfCanvas = false;
+    }
+  }
+
+  /**
+   * Check if object is out of Canvas.
+   *
+   * @param obj canvas Object. (Text, Figure, image, etc...)
+   */
+  isObjectOutOfCanvas(obj): boolean {
+    const boundingRect = obj.getBoundingRect(true);
+    let isObjectOut = false;
+
+    if (boundingRect.left < 0
+      || boundingRect.top < 0
+      || (boundingRect.left + boundingRect.width) > this.canvas.getWidth()
+      || (boundingRect.top + boundingRect.height) > this.canvas.getHeight()) {
+      isObjectOut = true;
+    }
+
+    return isObjectOut;
   }
 
   setWidth(value: number): void {
@@ -692,20 +784,6 @@ export class FabricjsEditorComponent implements AfterViewInit, OnInit {
 
   renderAll(): void {
     this.canvas.renderAll();
-  }
-
-  handleObjectOutCanvas(e): void {
-    const obj = e.target;
-    const boundingRect = obj.getBoundingRect(true);
-    if (boundingRect.left < 0
-      || boundingRect.top < 0
-      || boundingRect.left + boundingRect.width > this.canvas.getWidth()
-      || boundingRect.top + boundingRect.height > this.canvas.getHeight()) {
-      this.objectOutBorder.emit();
-      this.isObjectOutOfCanvas = true;
-    } else {
-      this.isObjectOutOfCanvas = false;
-    }
   }
 
   private handleMoving(e): void {

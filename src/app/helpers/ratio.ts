@@ -13,7 +13,7 @@ export function ratios() {
     {
       text: '5 x 7',
       value: 5 / 7
-    },
+    }
   ];
 }
 
