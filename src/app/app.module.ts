@@ -2,7 +2,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { FabricjsEditorModule } from 'projects/angular-editor-fabric-js/src/public-api';
 import { FormsModule } from '@angular/forms';
 import { ColorPickerModule } from 'ngx-color-picker';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -14,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { FabricjsEditorModule } from './lib/angular-editor-fabric-js.module';
 
 @NgModule({
   declarations: [

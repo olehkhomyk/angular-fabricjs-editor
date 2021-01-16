@@ -1,6 +1,5 @@
 import { isNil, isEmpty } from 'lodash';
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { FabricjsEditorComponent } from 'projects/angular-editor-fabric-js/src/public-api';
 import photos from '../assets/data/photos.json';
 import { PresentationCanvas } from './classes/presentation-canvas';
 import { map, skipWhile, switchMap, take, tap } from 'rxjs/operators';
@@ -21,6 +20,7 @@ import {
 } from './helpers/size';
 import { defaultAspectRatio } from './helpers/ratio';
 import { BgItem } from './interface/interfaces';
+import { FabricjsEditorComponent } from './lib/angular-editor-fabric-js.component';
 
 @Component({
   selector: 'app-root',
