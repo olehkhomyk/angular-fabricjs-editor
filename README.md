@@ -2,11 +2,6 @@
 
 > Drag-and-drop editor based on Fabricjs for Angular with multiple options
 
-### Example
-![Imgur](https://i.imgur.com/sQsL8G4.png)
-### Output
-![Imgur](https://i.imgur.com/hgTEb20.png)
-
 ### Features
 * Export to image
 * Export to SVG
@@ -40,15 +35,6 @@
 npm i angular-editor-fabric-js
 ```
 
-# Development
-
-## Installing the project
-
-```bash
-git clone https://github.com/kevoj/angular-editor-fabric-js.git
-cd angular-editor-fabric-js
-npm install
-```
 ## Start
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
